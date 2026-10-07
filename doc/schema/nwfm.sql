@@ -178,6 +178,76 @@ CREATE TABLE IF NOT EXISTS t_nwfm_settle_rule (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='清算赔付判定规则';
 
+CREATE TABLE IF NOT EXISTS t_nwfm_device_book (
+  id bigint NOT NULL COMMENT '主键',
+  book_no varchar(64) DEFAULT NULL COMMENT '册头号（同一市场同一季的一串）',
+  market_code varchar(64) DEFAULT NULL COMMENT '市场代号',
+  header_kind varchar(32) DEFAULT NULL COMMENT '册头写着的器具名目（续办仍照它核；空着按没写，不放行）',
+  source_type int DEFAULT NULL COMMENT '来手 0市场自录 1区里代收（两个来手各走一回）',
+  seq_no int DEFAULT NULL COMMENT '本串分串序号（0正本 1起溢出新串）',
+  declared_rows int DEFAULT NULL COMMENT '册头申报行数（缺省150，落库后不再变）',
+  received_rows int DEFAULT NULL COMMENT '本串实际进门行数',
+  accepted_rows int DEFAULT NULL COMMENT '收下行数',
+  rejected_rows int DEFAULT NULL COMMENT '退回行数',
+  status int DEFAULT NULL COMMENT '串状态 0收串中 1收讫 2空册 9异常',
+  closed_flag int DEFAULT '0' COMMENT '收讫标记 0未收讫 1已收讫（空册不出收讫）',
+  last_source_type int DEFAULT NULL COMMENT '最近一回的来手（第二回只照面）',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_nwfm_book_no (book_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='器具册整串册头';
+
+CREATE TABLE IF NOT EXISTS t_nwfm_device_book_row (
+  id bigint NOT NULL COMMENT '主键',
+  book_no varchar(64) DEFAULT NULL COMMENT '册头号',
+  seq_no int DEFAULT NULL COMMENT '分串序号',
+  row_no int DEFAULT NULL COMMENT '本串系统排定行次（1起，落定后不再变）',
+  stall_name varchar(64) DEFAULT NULL COMMENT '摊户名称',
+  device_kind varchar(32) DEFAULT NULL COMMENT '器具名目（空名目按未写核，不放行）',
+  declared_qty int DEFAULT NULL COMMENT '这批秤报来多少具',
+  matched_qty int DEFAULT NULL COMMENT '册上对得上多少具',
+  direction int DEFAULT NULL COMMENT '逐行去向 1收下 2退回 0进门待定',
+  reject_reason varchar(255) DEFAULT NULL COMMENT '退回原因（点到行，如「差两具」）',
+  parse_pass int DEFAULT '0' COMMENT '解析是否过 1过 0当场退回不进门',
+  handle_flag int DEFAULT '0' COMMENT '本回是否已办 0未办 1已办（续办只补未办，办好不惊动）',
+  source_type int DEFAULT NULL COMMENT '最初收下这一行的来手（单行退回不飘串）',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_nwfm_book_row (book_no, seq_no, row_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='器具册整串册行';
+
+CREATE TABLE IF NOT EXISTS t_nwfm_device_book_receipt (
+  id bigint NOT NULL COMMENT '主键',
+  book_no varchar(64) DEFAULT NULL COMMENT '册头号',
+  seq_no int DEFAULT NULL COMMENT '分串序号',
+  source_type int DEFAULT NULL COMMENT '本来手（两个来手各留一张回执）',
+  round_no int DEFAULT NULL COMMENT '同一来手第几回（同一回重交只照面，仍回头一张）',
+  in_rows int DEFAULT NULL COMMENT '进门笔数',
+  accepted_rows int DEFAULT NULL COMMENT '收下笔数',
+  rejected_rows int DEFAULT NULL COMMENT '退回笔数',
+  empty_flag int DEFAULT '0' COMMENT '空册字样 0否 1是（空册只落两个字，不出收讫）',
+  accepted_flag int DEFAULT '0' COMMENT '收讫字样 0不出 1出',
+  touched_flag int DEFAULT '0' COMMENT '本回是否翻账 0只照面 1新办（第二回不回未核、不再落一遍）',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_nwfm_book_recpt (book_no, seq_no, source_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='器具册整串回执';
+
 -- 初始档案数据（id=1 启用 / id=2 停用）
 -- 四张判定/档案表的种子数据。id=0 为在用行、id=1 为撤下行，
 -- 供判据取用（按 id 取判据）、档位档案取用、签批基准取用
