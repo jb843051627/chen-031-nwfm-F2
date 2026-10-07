@@ -37,6 +37,11 @@ public class TNwfmJob implements Serializable {
     @ApiModelProperty(value = "作业编号")
     private String jobNo;
 
+    /** 交件请求号 */
+    @TableField("req_no")
+    @ApiModelProperty(value = "交件请求号")
+    private String reqNo;
+
     /** 作业名称 */
     @TableField("job_name")
     @ApiModelProperty(value = "作业名称")
@@ -175,6 +180,14 @@ public class TNwfmJob implements Serializable {
 
     public void setJobNo(String jobNo) {
         this.jobNo = jobNo;
+    }
+
+    public String getReqNo() {
+        return reqNo;
+    }
+
+    public void setReqNo(String reqNo) {
+        this.reqNo = reqNo;
     }
 
     public String getJobName() {
